@@ -28,6 +28,7 @@ double _dialogElevation = 8.0, _borderRadius = 8.0;
 Color _backgroundColor = Colors.white;
 Curve _insetAnimCurve = Curves.easeInOut;
 EdgeInsets _dialogPadding = const EdgeInsets.all(8.0);
+Function _dismissCallback;
 
 Widget _progressWidget = Image.asset(
   'assets/double_ring_loading_io.gif',
@@ -42,13 +43,16 @@ class ProgressDialog {
         bool isDismissible,
         bool showLogs,
         TextDirection textDirection,
-        Widget customBody}) {
+        Widget customBody,
+        Function dismissCallback,
+      }) {
     _context = context;
     _progressDialogType = type ?? ProgressDialogType.Normal;
     _barrierDismissible = isDismissible ?? true;
     _showLogs = showLogs ?? false;
     _customBody = customBody ?? null;
     _direction = textDirection ?? TextDirection.ltr;
+    _dismissCallback = dismissCallback ?? null;
   }
 
   void style(
@@ -117,6 +121,7 @@ class ProgressDialog {
         _isShowing = false;
         Navigator.of(_dismissingContext).pop();
         if (_showLogs) debugPrint('ProgressDialog dismissed');
+        if (_dismissCallback != null) _dismissCallback();
         return Future.value(true);
       } else {
         if (_showLogs) debugPrint('ProgressDialog already dismissed');
@@ -236,7 +241,7 @@ class _BodyState extends State<_Body> {
             Align(
               alignment: Alignment.bottomRight,
               child: Text(
-                "$_progress/$_maxProgress",
+                "${_progress.toInt()}/${_maxProgress.toInt()}",
                 style: _progressTextStyle,
                 textDirection: _direction,
               ),
