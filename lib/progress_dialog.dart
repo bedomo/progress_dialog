@@ -123,7 +123,14 @@ class ProgressDialog {
     try {
       if (_isShowing) {
         _isShowing = false;
-        if (_dismissCallback != null) _dismissCallback();
+        if (_dismissCallback != null) {
+          bool needsCancel = await _dismissCallback();
+          if (needsCancel) {
+            if (_showLogs) debugPrint('ProgressDialog cancel dismissed');
+            return Future.value(false);
+          }
+        }
+
         if (_showLogs) debugPrint('ProgressDialog dismissed');
         Navigator.of(_dismissingContext).pop();
         return Future.value(true);
