@@ -4,6 +4,8 @@ import 'package:flutter/painting.dart';
 
 enum ProgressDialogType { Normal, Download }
 
+typedef Future<bool> DismissCallback();
+
 String _dialogMessage = "Loading...";
 double _progress = 0.0, _maxProgress = 100.0;
 
@@ -18,6 +20,7 @@ bool _isShowing = false;
 BuildContext _context, _dismissingContext;
 ProgressDialogType _progressDialogType;
 bool _barrierDismissible = true, _showLogs = false;
+DismissCallback _dismissCallback;
 
 TextStyle _progressTextStyle = TextStyle(
         color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.w400),
@@ -28,7 +31,8 @@ double _dialogElevation = 8.0, _borderRadius = 8.0;
 Color _backgroundColor = Colors.white;
 Curve _insetAnimCurve = Curves.easeInOut;
 EdgeInsets _dialogPadding = const EdgeInsets.all(8.0);
-Function _dismissCallback;
+
+
 
 Widget _progressWidget = Image.asset(
   'assets/double_ring_loading_io.gif',
@@ -44,7 +48,7 @@ class ProgressDialog {
         bool showLogs,
         TextDirection textDirection,
         Widget customBody,
-        Function dismissCallback,
+        DismissCallback dismissCallback,
       }) {
     _context = context;
     _progressDialogType = type ?? ProgressDialogType.Normal;
@@ -119,9 +123,9 @@ class ProgressDialog {
     try {
       if (_isShowing) {
         _isShowing = false;
-        Navigator.of(_dismissingContext).pop();
-        if (_showLogs) debugPrint('ProgressDialog dismissed');
         if (_dismissCallback != null) _dismissCallback();
+        if (_showLogs) debugPrint('ProgressDialog dismissed');
+        Navigator.of(_dismissingContext).pop();
         return Future.value(true);
       } else {
         if (_showLogs) debugPrint('ProgressDialog already dismissed');
