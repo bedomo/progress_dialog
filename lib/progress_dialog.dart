@@ -137,10 +137,14 @@ class ProgressDialog {
           onPressed: () async {
             if (_dismissCallback != null)
             {
-                _dismissCallback();
+              if (_showLogs) debugPrint('calling Dismiss callback');
+              await  _dismissCallback();
             }
 
+            if (_showLogs) debugPrint('calling hide');
             var result = await hide();
+
+            if (_showLogs) debugPrint('calling navigator pop');
             Navigator.pop(_context);
           },
           color: Color.fromRGBO(0, 179, 134, 1.0),
