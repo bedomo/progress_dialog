@@ -53,6 +53,7 @@ class ProgressDialog {
         DismissCallback dismissCallback,
       }) {
     _context = context;
+    _dialog = new _Body(this);
     _progressDialogType = type ?? ProgressDialogType.Normal;
     _barrierDismissible = isDismissible ?? true;
     _showLogs = showLogs ?? false;
@@ -191,7 +192,7 @@ class ProgressDialog {
   Future<bool> show() async {
     try {
       if (!_isShowing) {
-        _dialog = new _Body(this);
+        if (_dialog == null)  _dialog =  _Body(this);
         showDialog<dynamic>(
           context: _context,
           barrierDismissible: _barrierDismissible,
