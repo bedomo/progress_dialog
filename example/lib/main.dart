@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 //import '../../lib/progress_dialog.dart';
 
@@ -27,6 +28,12 @@ class MyApp extends StatelessWidget {
       type: ProgressDialogType.Download,
       textDirection: TextDirection.rtl,
       isDismissible: true,
+      showCloseButton: true,
+      dismissCallback: () {
+          debugPrint("dismiss callback");
+          return Future.value(true);
+      }
+
 //      customBody: LinearProgressIndicator(
 //        valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
 //        backgroundColor: Colors.white,

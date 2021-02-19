@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 enum ProgressDialogType { Normal, Download }
 
@@ -19,7 +20,7 @@ TextDirection _direction = TextDirection.ltr;
 bool _isShowing = false;
 BuildContext _context, _dismissingContext;
 ProgressDialogType _progressDialogType;
-bool _barrierDismissible = true, _showLogs = false;
+bool _barrierDismissible = true, _showCloseButton = false, _showLogs = false;
 DismissCallback _dismissCallback;
 
 TextStyle _progressTextStyle = TextStyle(
@@ -46,6 +47,7 @@ class ProgressDialog {
       {ProgressDialogType type,
         bool isDismissible,
         bool showLogs,
+        bool showCloseButton,
         TextDirection textDirection,
         Widget customBody,
         DismissCallback dismissCallback,
@@ -54,6 +56,7 @@ class ProgressDialog {
     _progressDialogType = type ?? ProgressDialogType.Normal;
     _barrierDismissible = isDismissible ?? true;
     _showLogs = showLogs ?? false;
+    _showCloseButton = showCloseButton ?? false;
     _customBody = customBody ?? null;
     _direction = textDirection ?? TextDirection.ltr;
     _dismissCallback = dismissCallback ?? null;
@@ -119,16 +122,53 @@ class ProgressDialog {
     return _isShowing;
   }
 
+  Future<bool> preHide() async {
+    Alert(
+      context: _context,
+      type: AlertType.warning,
+      title: "Atención",
+      desc: "Va a cancelar la tarea en curso.",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "SI",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () async {
+            if (_dismissCallback != null)
+            {
+                _dismissCallback();
+            }
+
+            var result = await hide();
+            Navigator.pop(_context);
+          },
+          color: Color.fromRGBO(0, 179, 134, 1.0),
+        ),
+        DialogButton(
+          child: Text(
+            "NO",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () {
+
+            Navigator.pop(_context);
+
+          },
+          gradient: LinearGradient(colors: [
+            Color.fromRGBO(116, 116, 191, 1.0),
+            Color.fromRGBO(52, 138, 199, 1.0)
+          ]),
+        )
+      ],
+    ).show();
+
+    return Future.value(false);
+  }
+
   Future<bool> hide() async {
     try {
       if (_isShowing) {
-        if (_dismissCallback != null) {
-          bool needsCancel = await _dismissCallback();
-          if (needsCancel) {
-            if (_showLogs) debugPrint('ProgressDialog cancel dismissed');
-            return Future.value(false);
-          }
-        }
         _isShowing = false;
         if (_showLogs) debugPrint('ProgressDialog dismissed');
         Navigator.of(_dismissingContext).pop();
@@ -147,7 +187,7 @@ class ProgressDialog {
   Future<bool> show() async {
     try {
       if (!_isShowing) {
-        _dialog = new _Body();
+        _dialog = new _Body(this);
         showDialog<dynamic>(
           context: _context,
           barrierDismissible: _barrierDismissible,
@@ -184,11 +224,18 @@ class ProgressDialog {
       return false;
     }
   }
+
+
 }
 
 // ignore: must_be_immutable
 class _Body extends StatefulWidget {
+  final ProgressDialog myProgressDialog;
+
   _BodyState _dialog = _BodyState();
+
+
+  _Body(this.myProgressDialog);
 
   update() {
     _dialog.update();
@@ -236,7 +283,7 @@ class _BodyState extends State<_Body> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            SizedBox(height: 8.0),
+
             Row(
               children: <Widget>[
                 Expanded(
@@ -261,25 +308,49 @@ class _BodyState extends State<_Body> {
       ),
     );
 
-    return _customBody ??
-        Container(
-          padding: _dialogPadding,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              // row body
-              Row(
+    return Stack(
+      children: [
+        _customBody ??
+            Container(
+              padding: _dialogPadding,
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const SizedBox(width: 8.0),
-                  _direction == TextDirection.ltr ? loader : text,
-                  const SizedBox(width: 8.0),
-                  _direction == TextDirection.rtl ? loader : text,
-                  const SizedBox(width: 8.0)
+                  // row body
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const SizedBox(width: 8.0),
+                      _direction == TextDirection.ltr ? loader : text,
+                      const SizedBox(width: 8.0),
+                      _direction == TextDirection.rtl ? loader : text,
+                      const SizedBox(width: 8.0)
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
+        Visibility(
+          visible: _showCloseButton,
+          child: Positioned(
+            right: 0.0,
+            child: GestureDetector(
+              onTap: () async {
+                bool  result = await widget.myProgressDialog.preHide();
+
+              },
+              child: Align(
+                alignment: Alignment.topRight,
+                child: CircleAvatar(
+                  radius: 14.0,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.close, color: Colors.red),
+                ),
+              ),
+            ),
           ),
-        );
+        ),
+      ],
+    );
   }
 }
