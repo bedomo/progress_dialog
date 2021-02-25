@@ -147,7 +147,7 @@ class ProgressDialog {
             if (_showLogs) debugPrint('calling navigator pop');
             Navigator.pop(_context);
           },
-          color: Color.fromRGBO(0, 179, 134, 1.0),
+          color: Colors.redAccent,
         ),
         DialogButton(
           child: Text(
