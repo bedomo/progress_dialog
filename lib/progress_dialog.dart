@@ -254,7 +254,9 @@ class _Body extends StatefulWidget {
 
 class _BodyState extends State<_Body> {
   update() {
-    setState(() {});
+    if (_isShowing) {
+      setState(() {});
+    }
   }
 
   @override
