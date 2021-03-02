@@ -141,11 +141,12 @@ class ProgressDialog {
               await  _dismissCallback();
             }
 
+            if (_showLogs) debugPrint('calling navigator pop');
+            Navigator.pop(_context);
             if (_showLogs) debugPrint('calling hide');
             var result = await hide();
 
-            if (_showLogs) debugPrint('calling navigator pop');
-            Navigator.pop(_context);
+
           },
           color: Colors.redAccent,
         ),
