@@ -142,7 +142,9 @@ class ProgressDialog {
             }
 
             if (_showLogs) debugPrint('calling navigator pop');
-            Navigator.pop(_context);
+            if (Navigator.canPop(_context)) {
+              Navigator.pop(_context);
+            }
             if (_showLogs) debugPrint('calling hide');
             var result = await hide();
 
@@ -176,7 +178,10 @@ class ProgressDialog {
       if (_isShowing) {
         _isShowing = false;
         if (_showLogs) debugPrint('ProgressDialog dismissed');
-        Navigator.of(_dismissingContext).pop();
+        if (Navigator.of(_dismissingContext).canPop()) {
+            Navigator.of(_dismissingContext).pop();
+        }
+
         return Future.value(true);
       } else {
         if (_showLogs) debugPrint('ProgressDialog already dismissed');
